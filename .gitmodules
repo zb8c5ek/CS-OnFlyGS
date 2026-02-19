@@ -1,9 +1,6 @@
 [submodule "submodules/Depth-Anything-V2"]
 	path = submodules/Depth-Anything-V2
 	url = https://github.com/DepthAnything/Depth-Anything-V2.git
-[submodule "submodules/fused-ssim"]
-	path = submodules/fused-ssim
-	url = https://github.com/rahul-goel/fused-ssim
 [submodule "submodules/graphdecoviewer"]
 	path = submodules/graphdecoviewer
 	url = https://github.com/graphdeco-inria/graphdecoviewer.git

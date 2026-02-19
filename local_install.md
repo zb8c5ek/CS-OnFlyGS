@@ -72,5 +72,5 @@ pip install -r requirements.txt --no-build-isolation
 The following `setup.py` files were modified to support RTX 5090:
 
 - `submodules/diff-gaussian-rasterization/setup.py` — added `-allow-unsupported-compiler` to nvcc args
-- `submodules/fused-ssim/setup.py` — added `-allow-unsupported-compiler` to nvcc args + `compute_120/sm_120` to fallback architectures
+- `fused_ssim/setup.py` — added `-allow-unsupported-compiler` to nvcc args + `compute_120/sm_120` to fallback architectures (integrated from submodule into codebase)
 - `submodules/simple-knn/setup.py` — added `-allow-unsupported-compiler` to nvcc args
