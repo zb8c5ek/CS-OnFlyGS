@@ -11,14 +11,12 @@
 
 import torch
 import os
-import sys
 import urllib.request
 import torch.nn.functional as F
 
 from poses.feature_detector import DescribedKeypoints
 from utils import sample
 
-sys.path.append("submodules/Depth-Anything-V2")
 os.environ["XFORMERS_FORCE_DISABLE_TRITON"] = "1"
 from depth_anything_v2.dpt import DepthAnythingV2
 
