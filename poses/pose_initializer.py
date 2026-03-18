@@ -11,6 +11,7 @@
 
 import torch
 import math
+import logging
 
 from poses.feature_detector import DescribedKeypoints
 from poses.mini_ba import MiniBA
@@ -217,6 +218,9 @@ class PoseInitializer():
             match_indices = match_indices[selected_indices]
 
         # Estimate an initial camera pose and inliers using PnP RANSAC
+        if len(uvs) < self.PnPRANSAC.m:
+            logging.warning("Too few matched 3D points for PnP RANSAC, skipping frame")
+            return None
         Rs6D_init = keyframes[0].rW2C
         ts_init = keyframes[0].tW2C
         Rt, inliers = self.PnPRANSAC(uvs, xyz, self.f, self.centre, Rs6D_init, ts_init, confs)

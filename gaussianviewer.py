@@ -104,7 +104,7 @@ class GaussianViewer(Viewer):
         self.anchor_sizes = {view: 0.1 for view in views}
         self.scaling_factor = {"top_view": 0.002, "point_view": 1}
         self.reset_intrinsics_flag = {view: False for view in views}
-        self.bg_color = [0.0, 0.0, 0.0]
+        self.bg_color = imgui.ImVec4(0.0, 0.0, 0.0, 1.0)
         self.show_top_view = False
         self.max_fps = 20
         self.last_show_gui_time = time.time()
@@ -189,7 +189,7 @@ class GaussianViewer(Viewer):
                 width = camera.res_x
                 height = camera.res_y
                 viewmatrix = torch.tensor(camera.to_camera, dtype=torch.float32).cuda().transpose(0, 1)
-                render_pkg = self.scene_model.render(width, height, viewmatrix, self.scaling_factor[view], torch.tensor(self.bg_color, device="cuda"), view=="top_view", camera.fov_x, camera.fov_y)
+                render_pkg = self.scene_model.render(width, height, viewmatrix, self.scaling_factor[view], torch.tensor([self.bg_color.x, self.bg_color.y, self.bg_color.z], device="cuda"), view=="top_view", camera.fov_x, camera.fov_y)
                 if self.render_mode() == "Splats":
                     image = render_pkg["render"].clamp(0, 1.0).mul(255).permute(1, 2, 0).byte()
                 elif self.render_mode() == "Depth":
