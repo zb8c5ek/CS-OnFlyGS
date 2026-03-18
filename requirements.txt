@@ -3,6 +3,6 @@ tqdm
 opencv-python
 lpips
 submodules/diff-gaussian-rasterization
-submodules/fused-ssim
+fused_ssim
 submodules/simple-knn
 submodules/graphdecoviewer
