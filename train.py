@@ -35,6 +35,11 @@ from webviewer.webviewer import WebViewer
 from graphdecoviewer.types import ViewerMode
 from utils import align_mean_up_fwd, increment_runtime
 
+try:
+    from rerun_viz import RerunVisualizer, HAS_RERUN
+except ImportError:
+    HAS_RERUN = False
+
 if __name__ == "__main__":
     torch.random.manual_seed(0)
     torch.cuda.manual_seed(0)
@@ -85,6 +90,17 @@ if __name__ == "__main__":
         viewer = WebViewer(scene_model, args.ip, args.port)
         viewer_thd = Thread(target=viewer.run, daemon=True)
         viewer_thd.start()
+
+    # Initialize Rerun visualizer (M3R-SLAM style)
+    rerun_viz = None
+    if args.rerun and HAS_RERUN:
+        rrd_path = args.rerun_save if args.rerun_save else None
+        if rrd_path is None:
+            # Auto-generate save path based on model_path
+            rrd_path = os.path.join(args.model_path, "rerun.rrd")
+        rerun_viz = RerunVisualizer(scene_model, save_path=rrd_path)
+    elif args.rerun and not HAS_RERUN:
+        print("Warning: --rerun requested but rerun-sdk not installed. Skipping.")
 
     n_active_keyframes = 0
     n_keyframes = 0
@@ -317,6 +333,14 @@ if __name__ == "__main__":
                 f"\033[36mAnchors:{len(scene_model.anchors)}\033[0m",
             ]
             pbar.set_postfix_str(",".join(bar_postfix), refresh=False)
+
+            # Rerun update (M3R-SLAM style logging)
+            if rerun_viz is not None:
+                rerun_viz.update(
+                    frame_idx=frameID,
+                    current_image=image,
+                    metrics=metrics if metrics else None,
+                )
 
     reconstruction_time = time.time() - reconstruction_start_time
 

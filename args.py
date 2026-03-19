@@ -129,10 +129,16 @@ def get_args():
 
     ## Viewer
     parser.add_argument('--viewer_mode', choices=['local', 'server', 'web', 'none'], default='none')
-    parser.add_argument('--ip', type=str, default="0.0.0.0", 
+    parser.add_argument('--ip', type=str, default="0.0.0.0",
                         help="IP address of the viewer client, if using server viewer_mode")
     parser.add_argument('--port', type=int, default=6009,
                         help="Port of the viewer client, if using server viewer_mode")
+
+    ## Rerun visualization (M3R-SLAM style logging)
+    parser.add_argument('--rerun', action='store_true',
+                        help="Enable Rerun visualization with M3R-SLAM style logging (camera frustums, Gaussian point cloud, trajectory, images)")
+    parser.add_argument('--rerun_save', type=str, default="",
+                        help="Path to save .rrd recording file. If empty, only live viewer is used.")
 
     args = parser.parse_args()
 
