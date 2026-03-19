@@ -6,3 +6,4 @@ submodules/diff-gaussian-rasterization
 fused_ssim
 submodules/simple-knn
 submodules/graphdecoviewer
+rerun-sdk
