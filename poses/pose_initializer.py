@@ -251,7 +251,7 @@ class PoseInitializer():
             # Return the pose of the current frame
             return Rt
         else:
-            print("Too few inliers for pose initialization")
+            logging.warning(f"Too few inliers for pose initialization ({mask.sum().item()}/{self.min_num_inliers} needed)")
             # Remove matches as we prevent the current frame from being registered
             for keyframe in keyframes:
                 keyframe.desc_kpts.matches.pop(index, None)

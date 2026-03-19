@@ -289,6 +289,10 @@ if __name__ == "__main__":
                     increment_runtime(runtimes["Opt"], start_time)
                 else:
                     should_add_keyframe = False
+                    # Reset prev_desc_kpts to avoid death spiral:
+                    # without this, displacement check keeps triggering
+                    # against a stale reference, causing repeated failures
+                    prev_desc_kpts = desc_kpts
 
         if should_add_keyframe:
             ## Check if anchor creation is needed based on the primitives' size 
