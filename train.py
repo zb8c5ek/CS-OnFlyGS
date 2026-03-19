@@ -107,6 +107,7 @@ if __name__ == "__main__":
     needs_reboot = False
     bootstrap_keyframe_dicts = []
     bootstrap_desc_kpts = []
+    skipped_frames = []  # Collect non-keyframes for post-hoc registration
 
     # Dict of runtimes for each step
     runtimes = ["Load", "BAB", "tri", "BAI", "Add", "Init", "Opt", "anc"]
@@ -342,7 +343,42 @@ if __name__ == "__main__":
                     metrics=metrics if metrics else None,
                 )
 
+        # Collect skipped (non-keyframe) frames for post-hoc registration
+        if not should_add_keyframe and n_keyframes >= args.num_keyframes_miniba_bootstrap:
+            skipped_frames.append({"image": image, "info": info, "desc_kpts": desc_kpts})
+
     reconstruction_time = time.time() - reconstruction_start_time
+
+    ## Post-hoc registration: register skipped frames against the built map
+    if len(skipped_frames) > 0:
+        print(f"Registering {len(skipped_frames)} skipped frames against the built map...")
+        n_registered = 0
+        for frame_dict in tqdm(skipped_frames, desc="Registering skipped frames"):
+            desc_kpts = frame_dict["desc_kpts"]
+            image = frame_dict["image"]
+            info = frame_dict["info"]
+            # Find best matching keyframes from the full map
+            prev_keyframes = scene_model.get_prev_keyframes(
+                args.num_prev_keyframes_miniba_incr, False, desc_kpts
+            )
+            # Run PnP + mini-BA to estimate pose
+            Rt = pose_initializer.initialize_incremental(
+                prev_keyframes, desc_kpts, n_keyframes, True, image
+            )
+            if Rt is not None:
+                if args.use_colmap_poses:
+                    Rt = info["Rt"]
+                info["is_test"] = True  # Mark as test so it doesn't affect Gaussians
+                keyframe = Keyframe(
+                    image, info, desc_kpts, Rt, n_keyframes,
+                    scene_model.f, dense_extractor, depth_estimator, triangulator, args,
+                )
+                scene_model.add_keyframe(keyframe)
+                n_keyframes += 1
+                n_registered += 1
+            else:
+                print(f"  Failed to register frame: {info.get('name', '?')}")
+        print(f"Registered {n_registered}/{len(skipped_frames)} skipped frames")
 
     # Set to inference mode so that the model can be rendered properly
     scene_model.enable_inference_mode()
