@@ -76,8 +76,8 @@ class RerunVisualizer:
             )
             print(f"[RerunViz] Recording will be saved to: {save_path}")
 
-        # Coordinate system: OpenCV convention (X-right, Y-down, Z-forward)
-        rr.log("/", rr.ViewCoordinates.RIGHT_HAND_Y_DOWN, static=True)
+        # Coordinate system on /world (not root, to avoid the large default grid)
+        rr.log("/world", rr.ViewCoordinates.RIGHT_HAND_Y_DOWN, static=True)
 
         # Blueprint: 3D scene + image panels (M3R-SLAM layout)
         blueprint = rrb.Blueprint(
@@ -292,6 +292,20 @@ class RerunVisualizer:
                     radii=0.003,
                 ),
             )
+
+        # Scene bounding box so Rerun's orbit camera centers on the data
+        bbox_min = centres_np.min(axis=0)
+        bbox_max = centres_np.max(axis=0)
+        center = (bbox_min + bbox_max) / 2.0
+        half_size = (bbox_max - bbox_min) / 2.0 + 0.1  # small padding
+        rr.log(
+            "/world/scene_bbox",
+            rr.Boxes3D(
+                centers=[center],
+                half_sizes=[half_size],
+                colors=[[255, 255, 255, 30]],  # nearly invisible
+            ),
+        )
 
     # ------------------------------------------------------------------ #
     #  Gaussian point cloud                                               #
