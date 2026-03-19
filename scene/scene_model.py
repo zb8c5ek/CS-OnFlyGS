@@ -572,17 +572,18 @@ class SceneModel:
         return closest_anchors, closest_anchors_ids
 
     @torch.no_grad()
-    def get_prev_keyframes(self, n: int, update_3dpts: bool, desc_kpts: DescribedKeypoints = None):
+    def get_prev_keyframes(self, n: int, update_3dpts: bool, desc_kpts: DescribedKeypoints = None, search_all: bool = False):
         """
         Get the n previous keyframes that are the closest to the last
         If desc_kpts is not None, we find the previous keyframes that have the most matches with desc_kpts. The search window is given by self.num_prev_keyframes_check
+        If search_all is True, search all keyframes (used for relocalization fallback)
         """
         # Make sure the optimization thread is not running
         self.join_optimization_thread()
 
         # Look for the previous keyframes with the most matches with desc_kpts (if provided)
         if desc_kpts is not None and len(self.keyframes) > n:
-            n_ckecks = min(self.num_prev_keyframes_check, len(self.keyframes))
+            n_ckecks = len(self.keyframes) if search_all else min(self.num_prev_keyframes_check, len(self.keyframes))
             keyframes_indices_to_check = self.sorted_frame_indices[:n_ckecks]
             n_matches = torch.zeros(len(keyframes_indices_to_check), device="cuda")
             for i, index in enumerate(keyframes_indices_to_check):

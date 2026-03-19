@@ -288,11 +288,49 @@ if __name__ == "__main__":
                         scene_model.optimization_loop(args.num_iterations)
                     increment_runtime(runtimes["Opt"], start_time)
                 else:
-                    should_add_keyframe = False
-                    # Reset prev_desc_kpts to avoid death spiral:
-                    # without this, displacement check keeps triggering
-                    # against a stale reference, causing repeated failures
-                    prev_desc_kpts = desc_kpts
+                    # Relocalization fallback: retry with all keyframes as candidates
+                    logging.info("Pose init failed, attempting relocalization with full keyframe search...")
+                    prev_keyframes_reloc = scene_model.get_prev_keyframes(
+                        args.num_prev_keyframes_miniba_incr, True, desc_kpts, search_all=True
+                    )
+                    Rt = pose_initializer.initialize_incremental(
+                        prev_keyframes_reloc, desc_kpts, n_keyframes, info["is_test"], image
+                    )
+                    if Rt is not None:
+                        logging.info("Relocalization successful!")
+                        if args.use_colmap_poses:
+                            Rt = info["Rt"]
+                        keyframe = Keyframe(
+                            image,
+                            info,
+                            desc_kpts,
+                            Rt,
+                            n_keyframes,
+                            f,
+                            dense_extractor,
+                            depth_estimator,
+                            triangulator,
+                            args,
+                        )
+                        scene_model.add_keyframe(keyframe)
+                        prev_keyframe = keyframe
+                        increment_runtime(runtimes["Add"], start_time)
+                        start_time = time.time()
+                        scene_model.add_new_gaussians()
+                        increment_runtime(runtimes["Init"], start_time)
+                        start_time = time.time()
+                        if is_stream:
+                            scene_model.optimize_async(args.num_iterations)
+                        else:
+                            scene_model.optimization_loop(args.num_iterations)
+                        increment_runtime(runtimes["Opt"], start_time)
+                    else:
+                        logging.warning("Relocalization failed, skipping frame")
+                        should_add_keyframe = False
+                        # Reset prev_desc_kpts to avoid death spiral:
+                        # without this, displacement check keeps triggering
+                        # against a stale reference, causing repeated failures
+                        prev_desc_kpts = desc_kpts
 
         if should_add_keyframe:
             ## Check if anchor creation is needed based on the primitives' size 
