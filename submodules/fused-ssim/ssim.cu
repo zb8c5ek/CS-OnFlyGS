@@ -1,3 +1,14 @@
+// Windows SDK (rpcndr.h) defines 'small' as 'char', which conflicts with
+// PyTorch headers using 'small' as a parameter name.
+#ifdef _WIN32
+#  include <windows.h>
+#  undef small
+#  undef min
+#  undef max
+#  undef near
+#  undef far
+#endif
+
 #include <torch/extension.h>
 #include <cooperative_groups.h>
 #include <algorithm>

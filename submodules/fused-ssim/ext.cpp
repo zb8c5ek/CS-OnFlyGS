@@ -1,3 +1,12 @@
+#ifdef _WIN32
+#  include <windows.h>
+#  undef small
+#  undef min
+#  undef max
+#  undef near
+#  undef far
+#endif
+
 #include <torch/extension.h>
 #include "ssim.h"
 

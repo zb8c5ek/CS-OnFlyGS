@@ -74,3 +74,28 @@ The following `setup.py` files were modified to support RTX 5090:
 - `submodules/diff-gaussian-rasterization/setup.py` — added `-allow-unsupported-compiler` to nvcc args
 - `fused_ssim/setup.py` — added `-allow-unsupported-compiler` to nvcc args + `compute_120/sm_120` to fallback architectures (integrated from submodule into codebase)
 - `submodules/simple-knn/setup.py` — added `-allow-unsupported-compiler` to nvcc args
+
+### Windows `#define small char` fix in fused-ssim sources
+
+Windows SDK (`rpcndr.h`) defines `#define small char`. When PyTorch's
+`CUDACachingAllocator.h` uses `small` as a parameter name, the preprocessor
+turns `bool small` into `bool char`, causing nvcc compilation failure.
+
+Instead of (or in addition to) patching the PyTorch header (Bug 1 above),
+`submodules/fused-ssim/ssim.cu` and `submodules/fused-ssim/ext.cpp` were
+patched to pre-include `<windows.h>` and `#undef small` (plus `min`, `max`,
+`near`, `far`) before any torch headers:
+
+```cpp
+#ifdef _WIN32
+#  include <windows.h>
+#  undef small
+#  undef min
+#  undef max
+#  undef near
+#  undef far
+#endif
+```
+
+This makes the fused-ssim submodule buildable on Windows without touching
+PyTorch's installed headers.
