@@ -11,7 +11,7 @@
 
 import torch
 
-from diff_gaussian_rasterization import adamUpdate, adamUpdateBasic
+from diff_gaussian_rasterization_onfly import adamUpdate, adamUpdateBasic
 
 
 class BaseAdam:

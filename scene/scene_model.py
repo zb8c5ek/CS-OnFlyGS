@@ -24,7 +24,7 @@ import numpy as np
 
 import lpips
 from fused_ssim import fused_ssim
-from diff_gaussian_rasterization import (
+from diff_gaussian_rasterization_onfly import (
     GaussianRasterizationSettings,
     GaussianRasterizer,
 )
