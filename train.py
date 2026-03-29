@@ -98,7 +98,7 @@ if __name__ == "__main__":
         if rrd_path is None:
             # Auto-generate save path based on model_path
             rrd_path = os.path.join(args.model_path, "rerun.rrd")
-        rerun_viz = RerunVisualizer(scene_model, save_path=rrd_path)
+        rerun_viz = RerunVisualizer(scene_model, save_path=rrd_path, show_viewer=not args.rerun_no_viewer)
     elif args.rerun and not HAS_RERUN:
         print("Warning: --rerun requested but rerun-sdk not installed. Skipping.")
 

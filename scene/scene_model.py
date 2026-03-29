@@ -28,7 +28,7 @@ from diff_gaussian_rasterization_onfly import (
     GaussianRasterizationSettings,
     GaussianRasterizer,
 )
-from simple_knn._C import distIndex2
+from simple_knn_onfly._C import distIndex2
 from poses.feature_detector import DescribedKeypoints
 from poses.matcher import Matcher
 from poses.guided_mvs import GuidedMVS

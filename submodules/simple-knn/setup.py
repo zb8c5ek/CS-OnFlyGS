@@ -19,10 +19,10 @@ if os.name == 'nt':
     cxx_compiler_flags.append("/wd4624")
 
 setup(
-    name="simple_knn",
+    name="simple_knn_onfly",
     ext_modules=[
         CUDAExtension(
-            name="simple_knn._C",
+            name="simple_knn_onfly._C",
             sources=[
             "spatial.cu", 
             "simple_knn.cu",

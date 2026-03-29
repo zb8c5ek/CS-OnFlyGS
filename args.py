@@ -139,6 +139,8 @@ def get_args():
                         help="Enable Rerun visualization with M3R-SLAM style logging (camera frustums, Gaussian point cloud, trajectory, images)")
     parser.add_argument('--rerun_save', type=str, default="",
                         help="Path to save .rrd recording file. If empty, only live viewer is used.")
+    parser.add_argument('--rerun_no_viewer', action='store_true',
+                        help="Save .rrd file without spawning the live Rerun viewer window.")
 
     args = parser.parse_args()
 

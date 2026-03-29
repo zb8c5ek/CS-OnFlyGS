@@ -17,6 +17,7 @@ Usage:
     viz.update(frame_idx, image, metrics)
 """
 
+import os
 import numpy as np
 import torch
 
@@ -39,6 +40,7 @@ class RerunVisualizer:
         frustum_scale: float = 0.1,
         app_id: str = "OnFlyGS-SLAM",
         save_path: str | None = None,
+        show_viewer: bool = True,
     ):
         if not HAS_RERUN:
             raise ImportError(
@@ -52,29 +54,36 @@ class RerunVisualizer:
         self.logged_kf_count = 0
         self._debug_count = 0
 
-        # Kill stale Rerun viewers
-        import subprocess, os, time
-
-        if os.name == "nt":
-            subprocess.run(["taskkill", "/f", "/im", "rerun.exe"], capture_output=True)
-        else:
-            subprocess.run(["pkill", "-f", "rerun"], capture_output=True)
-        time.sleep(1)
+        import pathlib
 
         # Init Rerun
         rr.init(app_id)
-        rr.spawn(connect=True)
 
-        if save_path is not None:
-            import pathlib
+        if show_viewer:
+            # Kill stale Rerun viewers
+            import subprocess, time
+            if os.name == "nt":
+                subprocess.run(["taskkill", "/f", "/im", "rerun.exe"], capture_output=True)
+            else:
+                subprocess.run(["pkill", "-f", "rerun"], capture_output=True)
+            time.sleep(1)
 
+            rr.spawn(connect=True)
+
+            if save_path is not None:
+                pathlib.Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+                rec = rr.get_global_data_recording()
+                rec.set_sinks(
+                    rr.GrpcSink(),
+                    rr.FileSink(save_path),
+                )
+                print(f"[RerunViz] Recording will be saved to: {save_path}")
+        else:
+            if save_path is None:
+                raise ValueError("--rerun_no_viewer requires --rerun_save to be set.")
             pathlib.Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-            rec = rr.get_global_data_recording()
-            rec.set_sinks(
-                rr.GrpcSink(),
-                rr.FileSink(save_path),
-            )
-            print(f"[RerunViz] Recording will be saved to: {save_path}")
+            rr.save(save_path)
+            print(f"[RerunViz] Save-only mode. Recording will be saved to: {save_path}")
 
         # Coordinate system on /world (not root, to avoid the large default grid)
         rr.log("/world", rr.ViewCoordinates.RIGHT_HAND_Y_DOWN, static=True)
